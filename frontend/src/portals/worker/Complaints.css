@@ -1,0 +1,93 @@
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(180deg, #27428a, #2644a6);
+  color: #ecfdf5;
+  padding: 0 16px;
+  height: 60px;
+  box-shadow: 0 10px 25px rgba(15, 118, 110, 0.4);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  height: 50px;
+  width: 50px;
+  margin-right: 10px;
+  border-radius: 18px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.logo span {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ecfdf5;
+  white-space: nowrap;
+}
+
+.heading {
+  flex-grow: 1;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.logout {
+  margin-right: 10px;
+}
+
+.logout-link {
+  color: #ecfdf5;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.logout-link:hover {
+  text-decoration: underline;
+}
+
+.complaint {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background-color: #f9fafb;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+}
+
+.complaint p {
+  margin-bottom: 6px;
+}
+
+.complaint .label {
+  font-weight: 600;
+  color: #111827;
+}
+
+.complaint .value {
+  color: #4b5563;
+}
+
+.complaint .update-link { 
+  display: inline-block; 
+  margin-top: 8px; 
+  padding: 6px 12px; 
+  background-color: #3e59b3; 
+  color: #fff; 
+  border-radius: 999px; 
+  text-decoration: none; 
+  font-size: 14px; 
+  font-weight: 500; 
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease; 
+} 
+.complaint .update-link:hover { 
+  background-color: #2c3e9a; 
+  transform: translateY(-1px); 
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.3); 
+}

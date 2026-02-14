@@ -1,0 +1,14 @@
+.star-container {
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.star {
+  color: #ccc;
+  margin-right: 6px;
+  transition: color 0.2s;
+}
+
+.star.filled {
+  color: #ffc107;
+}

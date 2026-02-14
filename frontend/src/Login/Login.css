@@ -1,0 +1,138 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+.login-page {
+  height: 100vh;
+  background-image: url("/VNIT.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: 80px;
+  position: relative;
+}
+
+.login-header {
+  position: absolute;
+  top: 30px;
+  left: 48%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #124f89;
+}
+
+.login-header h1 {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.login-box {
+  width: 320px;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 28px 26px;
+  border-radius: 12px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.3);
+}
+
+.login-box h2 {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #1f4e79;
+}
+
+.login-box label {
+  font-size: 15px;
+  display: block;
+  margin-top: 10px;
+}
+
+.login-box input,
+.login-box select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #cbd5f5;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 40px;
+}
+
+.password-toggle {
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.password-toggle:hover {
+  color: #1f4e79;
+}
+
+.password-toggle:focus {
+  outline: none;
+}
+
+.login-box button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 10px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 999px;
+  color: #f9fafb;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.login-box button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.45);
+}
+
+.login-box button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#selection,
+#person {
+  display: inline;
+  margin-top: 15px;
+  font-size: 15px;
+  width: 187px;
+  border-radius: 3px;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+  text-align: center;
+}

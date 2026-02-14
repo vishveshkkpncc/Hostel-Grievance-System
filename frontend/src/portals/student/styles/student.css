@@ -1,0 +1,12 @@
+.student-theme {
+  --accent: var(--student);
+}
+
+.student-theme h2 {
+  color: var(--accent);
+}
+
+.student-theme .button {
+  background: var(--accent);
+  color: white;
+}

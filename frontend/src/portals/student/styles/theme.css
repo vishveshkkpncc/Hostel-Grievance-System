@@ -1,0 +1,21 @@
+:root {
+  --bg: #f5f7fb;
+  --card-bg: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+
+  --student: #2563eb;
+  --worker: #16a34a;
+  --admin: #7c3aed;
+
+  --radius: 12px;
+  --shadow: 0 8px 20px rgba(0,0,0,0.08);
+  --transition: 0.25s ease;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}

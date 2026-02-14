@@ -1,0 +1,78 @@
+.home-container {
+  position: relative;
+  height: 100vh;
+  background-image: url('VNIT.png');
+  background-size: cover;
+  background-position: center;
+  margin: 0;
+  padding: 0;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+}
+.logo {
+  width: 100px;
+  height: 100px;
+  margin-right: 20px;
+}
+
+.institute-info {
+  text-align: left;
+}
+
+.institute-info h2 {
+  font-size: 18px;
+  margin-bottom: 5px;
+  margin-top: 0;
+}
+
+.portal-heading {
+  font-size: 32px;
+}
+
+.bottom-section {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 50px;
+}
+
+.options {
+  display: flex;
+  justify-content: space-around;
+}
+
+.option {
+  background-color: #4CAF50;
+  color: #fff;
+  padding: 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  margin: 0 20px;
+}
+
+.option:hover {
+  background-color: #3e8e41;
+}
