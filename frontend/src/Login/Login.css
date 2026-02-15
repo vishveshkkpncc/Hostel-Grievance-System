@@ -70,30 +70,42 @@
 
 .password-input-wrapper input {
   padding-right: 40px;
+  margin-top: 5px;
 }
 
-.password-toggle {
-  right: 8px;
+/* Override .login-box button so toggle sits inside the field, not below */
+.password-input-wrapper .password-toggle {
+  position: absolute;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
+  width: auto;
+  min-width: unset;
+  margin: 0;
+  margin-top: 0;
+  padding: 4px;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 18px;
-  padding: 4px 8px;
-  margin-top: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #666;
-  transition: color 0.2s;
+  transition: none;
 }
 
-.password-toggle:hover {
-  color: #1f4e79;
+.password-input-wrapper .password-toggle svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
-.password-toggle:focus {
+/* Prevent login button hover from moving the eye */
+.login-box .password-input-wrapper .password-toggle:hover {
+  transform: translateY(-50%) !important;
+}
+
+.password-input-wrapper .password-toggle:focus {
   outline: none;
 }
 
