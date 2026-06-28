@@ -24,6 +24,17 @@ The app supports:
 - Student profile and password change support
 - Frontend state stored in `localStorage`
 
+## 🎥 Demo Video
+[Watch Demo](https://youtu.be/TULJ8LyNVBs)
+
+## 📸 Screenshots
+<img width="1366" height="768" alt="Screenshot (25)" src="https://github.com/user-attachments/assets/9be96fbe-3d1c-42aa-be29-da9a35b8dcf0" />
+<img width="1366" height="768" alt="Screenshot (26)" src="https://github.com/user-attachments/assets/7e6fb92b-76f5-464c-90d1-3cb49d8d490c" />
+<img width="1366" height="768" alt="Screenshot (27)" src="https://github.com/user-attachments/assets/3d536ef4-3c4f-4632-95be-510a3453f6fe" />
+<img width="1366" height="768" alt="Screenshot (28)" src="https://github.com/user-attachments/assets/2fe54002-5fca-4b1a-ab09-2ab8ae00da6e" />
+<img width="1366" height="768" alt="Screenshot (29)" src="https://github.com/user-attachments/assets/6c20226f-308f-4fed-a87c-d66638050b77" />
+<img width="1366" height="768" alt="Screenshot (30)" src="https://github.com/user-attachments/assets/596e6d88-370b-4a18-8ee3-99847d12ca55" />
+
 ## Tech Stack
 
 - Backend: Node.js, Express, Mongoose, MongoDB
