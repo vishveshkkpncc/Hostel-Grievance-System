@@ -15,7 +15,7 @@ export const apiRequest = async (endpoint, options = {}) => {
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers
-  });
+  }); 
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: "Request failed" }));

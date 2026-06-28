@@ -13,8 +13,8 @@ export const getUser = () => {
 };
 
 export const isAuthenticated = () => {
-  return !!getToken();
-};
+  return getToken();
+}; 
 
 export const logout = () => {
   localStorage.removeItem("token");

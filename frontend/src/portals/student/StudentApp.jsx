@@ -31,7 +31,7 @@ export default function StudentApp() {
     <div className="page student-theme">
       <div className="app-container">
         <Sidebar />
-        <div className="main-content">
+        <div className="main-content"> 
           <Routes>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="lan-complaint" element={<LanComplaints />} />

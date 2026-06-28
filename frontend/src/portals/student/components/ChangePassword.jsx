@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ChangePassword(){
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [status, setStatus] = useState(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,9 +33,14 @@ export default function ChangePassword(){
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Change Password</h2>
-      <form onSubmit={handleSubmit} style={{ maxWidth: 480, background:'#fff', padding:20, borderRadius:8 }}>
+    <div className="student-subpage">
+      <div className="student-subpage-header">
+        <h2>Change Password</h2>
+        <button className="student-back-btn" onClick={() => navigate("/student/dashboard")}>
+          Back to Dashboard
+        </button>
+      </div>
+      <form onSubmit={handleSubmit} style={{ maxWidth: 480, background:'#fff', padding:20, borderRadius:16, boxShadow:'0 10px 22px rgba(15,23,42,0.08)' }}>
         <div style={{ marginBottom:12 }}>
           <label>Old Password</label>
           <input type="password" value={oldPassword} onChange={e=>setOldPassword(e.target.value)} required style={{ width:'100%', padding:8, marginTop:6 }} />

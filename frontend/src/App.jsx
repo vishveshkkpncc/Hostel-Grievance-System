@@ -15,7 +15,7 @@ function App() {
     const user = getUser();
     if (role && user?.role !== role) {
       return <Navigate to="/" replace />;
-    }
+    }  
 
     return children;
   };

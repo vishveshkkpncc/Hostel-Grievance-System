@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function StudentAnnouncements() {
   const [announcements, setAnnouncements] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -22,19 +24,30 @@ function StudentAnnouncements() {
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>📢 Announcements</h2>
+    <div className="student-subpage">
+      <div className="student-subpage-header">
+        <h2>Announcements</h2>
+        <button className="student-back-btn" onClick={() => navigate("/student/dashboard")}>
+          Back to Dashboard
+        </button>
+      </div>
 
       {announcements.length === 0 ? (
-        <p>No announcements</p>
+        <div className="empty-state">No announcements available right now.</div>
       ) : (
-        <ul>
+        <div className="announcement-list">
           {announcements.map(a => (
-            <li key={a._id}>
-              <b>{a.text}</b>
-            </li>
+            <div className="announcement-card" key={a._id}>
+              <div className="announcement-marker">Notice</div>
+              <p>{a.text}</p>
+              {a.createdAt && (
+                <div className="announcement-meta">
+                  Posted on {new Date(a.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                </div>
+              )}
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

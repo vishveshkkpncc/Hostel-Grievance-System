@@ -1,20 +1,66 @@
 const express = require("express");
 const Complaint = require("../models/Complaint");
 const { authenticate, authorize } = require("../middleware/auth");
+const { isDBConnected } = require("../db");
+const mockUsers = require("../mockUsers");
 
 const router = express.Router();
 
-const workers = [
-  { name: "Suresh", department: "Electrical", available: true },
-  { name: "Raju", department: "Electrical", available: true },
-  { name: "Chotu", department: "Electrical", available: true },
-  { name: "Ramesh", department: "Civil", available: true },
-  { name: "Mukesh", department: "Civil", available: true },
-  { name: "Abdul", department: "Civil", available: true },
-  { name: "Amit", department: "Lan", available: true },
-  { name: "Bagha", department: "Lan", available: true },
-  { name: "Magan", department: "Lan", available: true },
-];
+const workers = mockUsers
+  .filter(user => user.role === "worker")
+  .map(user => ({
+    name: user.name,
+    department: user.department,
+    available: true,
+  }));
+
+let mockComplaints = [];
+
+const createMockId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+const getComplaintId = complaint => String(complaint._id || complaint.id);
+
+const findComplaints = async (query = {}) => {
+  if (isDBConnected()) {
+    return Complaint.find(query);
+  }
+
+  return mockComplaints.filter(complaint =>
+    Object.entries(query).every(([key, value]) => complaint[key] === value)
+  );
+};
+
+const countComplaints = async (query = {}) => {
+  if (isDBConnected()) {
+    return Complaint.countDocuments(query);
+  }
+
+  return (await findComplaints(query)).length;
+};
+
+const findComplaintById = async (id) => {
+  if (isDBConnected()) {
+    return Complaint.findById(id);
+  }
+
+  return mockComplaints.find(complaint => getComplaintId(complaint) === String(id));
+};
+
+const saveComplaint = async (complaint) => {
+  if (isDBConnected()) {
+    await complaint.save();
+    return complaint;
+  }
+
+  const index = mockComplaints.findIndex(item => getComplaintId(item) === getComplaintId(complaint));
+  if (index >= 0) {
+    mockComplaints[index] = complaint;
+  } else {
+    mockComplaints.push(complaint);
+  }
+
+  return complaint;
+};
 
 async function autoAssignWorker(category) {
   const deptWorkers = workers.filter(w => w.department === category && w.available);
@@ -25,7 +71,7 @@ async function autoAssignWorker(category) {
   let chosenWorker = "Unassigned";
 
   for (let w of deptWorkers) {
-    const activeCount = await Complaint.countDocuments({
+    const activeCount = await countComplaints({
       worker: w.name,
       status: "inprogress",
     });
@@ -44,15 +90,20 @@ router.post("/", authenticate, authorize("student"), async (req, res) => {
   try {
     const worker = await autoAssignWorker(req.body.category);
 
-    const complaint = new Complaint({
+    const complaintData = {
       ...req.body,
+      studentId: req.user.userId,
       status: "pending",
       worker,
       assignedOn: worker === "Unassigned" ? null : new Date(),
       registeredOn: new Date(),
-    });
+    };
 
-    await complaint.save();
+    const complaint = isDBConnected()
+      ? new Complaint(complaintData)
+      : { _id: createMockId(), ...complaintData };
+
+    await saveComplaint(complaint);
     res.json(complaint);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -76,7 +127,7 @@ router.get("/student/:studentId", authenticate, async (req, res) => {
     }
     // Admins can view any student's complaints using the URL parameter
 
-    const complaints = await Complaint.find({
+    const complaints = await findComplaints({
       studentId: queryStudentId
     });
     res.json(complaints);
@@ -92,7 +143,7 @@ router.get("/", authenticate, async (req, res) => {
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
     }
-    const complaints = await Complaint.find();
+    const complaints = await findComplaints();
     res.json(complaints);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -102,7 +153,7 @@ router.get("/", authenticate, async (req, res) => {
 // Worker gets their assigned complaints
 router.get("/worker/:workerName", authenticate, authorize("worker"), async (req, res) => {
   try {
-    const complaints = await Complaint.find({
+    const complaints = await findComplaints({
       worker: req.params.workerName
     });
     res.json(complaints);
@@ -116,7 +167,7 @@ router.put("/:id", authenticate, authorize("worker", "admin"), async (req, res) 
   try {
     const { status, cost, reason } = req.body;
 
-    const complaint = await Complaint.findById(req.params.id);
+    const complaint = await findComplaintById(req.params.id);
     if (!complaint) {
       return res.status(404).json({ message: "Complaint not found" });
     }
@@ -137,7 +188,7 @@ router.put("/:id", authenticate, authorize("worker", "admin"), async (req, res) 
       complaint.assignedOn = new Date();
     }
 
-    await complaint.save();
+    await saveComplaint(complaint);
     res.json(complaint);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -149,7 +200,7 @@ router.put("/:id/rate", authenticate, authorize("student"), async (req, res) => 
   try {
     const { rating } = req.body;
 
-    const complaint = await Complaint.findById(req.params.id);
+    const complaint = await findComplaintById(req.params.id);
     if (!complaint) {
       return res.status(404).json({ message: "Complaint not found" });
     }
@@ -168,7 +219,7 @@ router.put("/:id/rate", authenticate, authorize("student"), async (req, res) => 
     }
 
     complaint.rating = Number(req.body.rating);
-    await complaint.save();
+    await saveComplaint(complaint);
 
     res.json({ message: "Rating submitted successfully" });
   } catch (err) {
@@ -179,6 +230,35 @@ router.put("/:id/rate", authenticate, authorize("student"), async (req, res) => 
 // Workers performance
 router.get("/workers/performance", authenticate, authorize("admin"), async (req, res) => {
   try {
+    if (!isDBConnected()) {
+      const performanceByWorker = mockComplaints
+        .filter(complaint => complaint.status === "resolved" && complaint.rating)
+        .reduce((acc, complaint) => {
+          if (!acc[complaint.worker]) {
+            acc[complaint.worker] = {
+              _id: complaint.worker,
+              category: complaint.category,
+              complaintsHandled: 0,
+              totalRating: 0,
+              totalCost: 0,
+            };
+          }
+
+          acc[complaint.worker].complaintsHandled += 1;
+          acc[complaint.worker].totalRating += Number(complaint.rating);
+          acc[complaint.worker].totalCost += Number(complaint.cost || 0);
+          return acc;
+        }, {});
+
+      return res.json(Object.values(performanceByWorker).map(worker => ({
+        _id: worker._id,
+        category: worker.category,
+        complaintsHandled: worker.complaintsHandled,
+        avgRating: worker.totalRating / worker.complaintsHandled,
+        totalCost: worker.totalCost,
+      })));
+    }
+
     const data = await Complaint.aggregate([
       { $match: { status: "resolved", rating: { $exists: true } } },
       {

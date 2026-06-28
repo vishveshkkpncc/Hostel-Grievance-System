@@ -8,7 +8,7 @@ export default function Login() {
   const [formData, setFormData] = useState({
     userId: "",
     password: "",
-    person: "Select"
+    person: "Select"  
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -62,6 +62,11 @@ export default function Login() {
       // Store token and user info
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      if (data.user.role === "student") {
+        localStorage.setItem("studentId", data.user.userId);
+      } else {
+        localStorage.removeItem("studentId");
+      }
 
       // Navigate based on role
       if (data.user.role === "student") {
@@ -73,7 +78,8 @@ export default function Login() {
       } else if (data.user.role === "admin") {
         navigate("/admin/dashboard");
       }
-    } catch (err) {
+    } 
+    catch (err) {
       setError(err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
@@ -105,7 +111,7 @@ export default function Login() {
             <input
               type={showPassword ? "text" : "password"}
               name="password"
-              placeholder="Enter Password"
+              placeholder="Enter your Password"
               value={formData.password}
               onChange={handleInputChange}
               required

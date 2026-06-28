@@ -1,25 +1,72 @@
 import { useState, useEffect } from "react";
 
+const WORKERS = [
+  { name: "Arun Sharma", category: "Electrical" },
+  { name: "Bhavesh Patel", category: "Civil" },
+  { name: "Deepak Verma", category: "Lan" },
+];
 
 const AdminDashboard = () => {
   const [view, setView] = useState("dashboard");
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [error, setError] = useState("");
 
-  const [complaints, setComplaints] =useState([]);
-  const fetchComplaints = () => {
-  const token = localStorage.getItem("token");
-  fetch("http://localhost:5000/api/complaints", {
-    headers: {
-      "Authorization": `Bearer ${token}`
+  const [complaints, setComplaints] = useState([]);
+
+  const getCategoryClass = (category) => {
+    return typeof category === "string" ? category.toLowerCase() : "";
+  };
+  const fetchComplaints = async () => {
+    setError("");
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch("http://localhost:5000/api/complaints", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Failed to load complaints.");
+        setComplaints([]);
+        return;
+      }
+
+      setComplaints(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Network error while loading complaints.");
+      setComplaints([]);
     }
-  })
-    .then(res => res.json())
-    .then(data => setComplaints(data))
-    .catch(err => console.error(err));
-};
-  const pendingCount = complaints.filter(c => c.status === "pending").length;
+  };
+  const pendingCount = complaints.filter(c => c?.status === "pending").length;
   const inprogressCount = complaints.filter(c => c.status === "inprogress").length;
   const resolvedCount = complaints.filter(c => c.status === "resolved").length;
+  const workerAnalytics = WORKERS.map(worker => {
+    const workerComplaints = complaints.filter(c => c.worker === worker.name);
+    const resolved = workerComplaints.filter(c => c.status === "resolved").length;
+    const inprogress = workerComplaints.filter(c => c.status === "inprogress").length;
+    const pending = workerComplaints.filter(c => c.status === "pending").length;
+    const totalCost = workerComplaints.reduce((sum, c) => sum + Number(c.cost || 0), 0);
+    const rated = workerComplaints.filter(c => c.rating);
+    const avgRating = rated.length
+      ? rated.reduce((sum, c) => sum + Number(c.rating), 0) / rated.length
+      : null;
+
+    return {
+      ...worker,
+      resolved,
+      inprogress,
+      pending,
+      totalAssigned: workerComplaints.length,
+      totalCost,
+      avgRating,
+      score: resolved + inprogress,
+    };
+  }).sort((a, b) => b.score - a.score || b.resolved - a.resolved);
+  const maxWorkerScore = Math.max(...workerAnalytics.map(w => w.score), 1);
 
   useEffect(() => {
   fetchComplaints();
@@ -27,27 +74,6 @@ const AdminDashboard = () => {
 
   
   const [sortByPriority, setSortByPriority]= useState(false);
-  const [performance, setPerformance] = useState([]);
-
-  const fetchPerformance = () => {
-    const token = localStorage.getItem("token");
-    // Correct endpoint is served from the complaints router:
-    // /api/complaints/workers/performance
-    fetch("http://localhost:5000/api/complaints/workers/performance", {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    })
-      .then(res => res.json())
-      .then(data => setPerformance(data))
-      .catch(err => console.error(err));
-  };
-
-  useEffect(() => {
-    if (view === "workerPerformance") {
-      fetchPerformance();
-    }
-  }, [view]);
   const [selectedWorker, setSelectedWorker] = useState("");
   const [announcementText,setAnnouncementText]= useState("");
   const [announcements,setAnnouncements]=useState([]);
@@ -93,15 +119,30 @@ const AdminDashboard = () => {
   const diff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
   return diff;
 };
-const fetchAnnouncements = () => {
+const fetchAnnouncements = async () => {
+  setError("");
   const token = localStorage.getItem("token");
-  fetch("http://localhost:5000/api/announcements", {
-    headers: {
-      "Authorization": `Bearer ${token}`
+
+  try {
+    const res = await fetch("http://localhost:5000/api/announcements", {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.message || "Failed to load announcements.");
+      setAnnouncements([]);
+      return;
     }
-  })
-    .then(res => res.json())
-    .then(data => setAnnouncements(data));
+
+    setAnnouncements(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error(err);
+    setError(err.message || "Network error while loading announcements.");
+    setAnnouncements([]);
+  }
 };
 useEffect(() => {
   fetchAnnouncements();
@@ -168,11 +209,96 @@ useEffect(() => {
       table th {
         text-align: left;
       }
+      .admin-action-button {
+        padding: 9px 16px;
+        background: #1976d2;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        box-shadow: 0 6px 14px rgba(25, 118, 210, 0.22);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .admin-action-button:hover {
+        background: #1259a8;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(25, 118, 210, 0.28);
+      }
+      .admin-back-button {
+        margin: 14px 0 0 24px;
+        padding: 8px 14px;
+        background: #ffffff;
+        color: #1f2937;
+        border: 1px solid #d7dee8;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.2s ease, box-shadow 0.2s ease;
+      }
+      .admin-back-button:hover {
+        background: #f4f7fb;
+        box-shadow: 0 6px 12px rgba(15, 23, 42, 0.08);
+      }
+      .performance-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin: 18px 0 24px;
+      }
+      .performance-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 16px;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      }
+      .performance-card h3 {
+        margin: 0 0 4px;
+        color: #172554;
+      }
+      .performance-card p {
+        margin: 4px 0;
+        color: #64748b;
+      }
+      .performance-bar {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-top: 12px;
+      }
+      .performance-bar span {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, #16a34a, #1976d2);
+      }
+      .status-pill {
+        display: inline-block;
+        min-width: 34px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        text-align: center;
+        font-weight: 700;
+      }
+      .status-pill.resolved {
+        color: #166534;
+        background: #dcfce7;
+      }
+      .status-pill.working {
+        color: #075985;
+        background: #e0f2fe;
+      }
+      .status-pill.pending {
+        color: #92400e;
+        background: #fef3c7;
+      }
       `}</style>
 
       {/* Top Bar */}
       {view !== "dashboard" && (
   <button
+    className="admin-back-button"
     onClick={() => {
   fetchComplaints();
   setView("dashboard");
@@ -189,6 +315,11 @@ useEffect(() => {
           window.location.href = "/";
         }}>Logout</button>
       </div>
+      {error && (
+        <div style={{ color: "#b00020", textAlign: "center", margin: "0 auto", maxWidth: "900px" }}>
+          {error}
+        </div>
+      )}
 
       {/* Dashboard */}
       {view === "dashboard" && (
@@ -196,14 +327,7 @@ useEffect(() => {
   <div style={{ textAlign: "right", width: "90%", margin: "20px auto" }}>
   <button
     onClick={() => setView("workerPerformance")}
-    style={{
-      padding: "8px 16px",
-      background: "#1976d2",
-      color: "white",
-      border: "none",
-      borderRadius: "6px",
-      cursor: "pointer"
-    }}
+    className="admin-action-button"
   >
     Worker Performance
   </button>
@@ -267,26 +391,64 @@ useEffect(() => {
   </>
 )}
 {view === "workerPerformance" && (
-  <div style={{ width: "90%", margin: "30px auto" }}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <h2>Worker Performance Analytics</h2>
+  <div style={{ width: "90%", margin: "30px auto", display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+      <div>
+        <h2 style={{ margin: 0 }}>Worker Performance Analytics</h2>
+        <p style={{ margin: "4px 0 0", color: "#64748b" }}>Comparing workers by resolved and currently working complaints.</p>
+      </div>
+      <div style={{ background: "#eff6ff", color: "#1d4ed8", padding: "8px 12px", borderRadius: "999px", fontWeight: 700 }}>
+        {workerAnalytics.length} workers tracked
+      </div>
     </div>
-    <table>
+    <div className="performance-grid">
+      {workerAnalytics.map((w, index) => (
+        <div className="performance-card" key={w.name}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+            <h3>{w.name}</h3>
+            <span style={{ background: "#e0f2fe", color: "#0369a1", padding: "4px 8px", borderRadius: "999px", fontSize: "12px", fontWeight: 700 }}>
+              #{index + 1}
+            </span>
+          </div>
+          <p>{w.category} Worker</p>
+          <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+            <div style={{ flex: 1, background: "#f0fdf4", padding: "8px", borderRadius: "8px" }}>
+              <div style={{ fontWeight: 700, color: "#166534" }}>{w.resolved}</div>
+              <div style={{ fontSize: "12px", color: "#4b5563" }}>Resolved</div>
+            </div>
+            <div style={{ flex: 1, background: "#eff6ff", padding: "8px", borderRadius: "8px" }}>
+              <div style={{ fontWeight: 700, color: "#1d4ed8" }}>{w.inprogress}</div>
+              <div style={{ fontSize: "12px", color: "#4b5563" }}>Working</div>
+            </div>
+          </div>
+          <div className="performance-bar">
+            <span style={{ width: `${(w.score / maxWorkerScore) * 100}%` }} />
+          </div>
+        </div>
+      ))}
+    </div>
+    <table style={{ width: "100%", background: "#fff", borderCollapse: "collapse", borderRadius: "10px", overflow: "hidden", boxShadow: "0 8px 20px rgba(15,23,42,0.08)" }}>
     <thead>
       <tr>
         <th>Worker</th>
         <th>Category</th>
-        <th>Complaints</th>
+        <th>Resolved</th>
+        <th>Working</th>
+        <th>Pending</th>
+        <th>Total Assigned</th>
         <th>Avg Rating</th>
         <th>Total Cost</th>
       </tr>
     </thead>
     <tbody>
-      {performance.map(w => (
-        <tr key={w._id}>
-          <td>{w._id}</td>
+      {workerAnalytics.map(w => (
+        <tr key={w.name}>
+          <td><b>{w.name}</b></td>
           <td>{w.category}</td>
-          <td>{w.complaintsHandled}</td>
+          <td><span className="status-pill resolved">{w.resolved}</span></td>
+          <td><span className="status-pill working">{w.inprogress}</span></td>
+          <td><span className="status-pill pending">{w.pending}</span></td>
+          <td>{w.totalAssigned}</td>
           <td>
           {w.avgRating ? `${w.avgRating.toFixed(2)} ⭐` : "Not rated"}
           </td>

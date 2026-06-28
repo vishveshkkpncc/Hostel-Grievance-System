@@ -1,11 +1,41 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const mockUsers = require("../mockUsers");
+const { isDBConnected } = require("../db");
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 const { authenticate } = require("../middleware/auth");
+
+// Helper function to find user from DB or mock users
+const findUser = async (userId) => {
+  if (isDBConnected()) {
+    return await User.findOne({ userId });
+  }
+  return mockUsers.find(u => u.userId === userId);
+};
+
+// Helper function to compare password
+const comparePassword = (user, candidatePassword) => {
+  console.log("🔐 Password comparison:");
+  console.log("   Candidate:", typeof candidatePassword, candidatePassword);
+  console.log("   Stored:", typeof user.password, user.password);
+  
+  if (user.comparePassword) {
+    // MongoDB user - this will be async, need to await
+    console.log("   Using bcrypt (DB user)");
+    return user.comparePassword(candidatePassword);
+  } else {
+    // Mock user - simple string comparison
+    console.log("   Using plain text (mock user)");
+    const match = String(user.password) === String(candidatePassword);
+    console.log("   Match result:", match);
+    return Promise.resolve(match);
+  }
+};
 
 // Login
 router.post("/login", async (req, res) => {
@@ -19,8 +49,11 @@ router.post("/login", async (req, res) => {
     // Normalize role to lowercase for comparison
     const normalizedRole = person.toLowerCase();
     
-    // First find user by userId only
-    const user = await User.findOne({ userId: userId });
+    // Find user from DB or mock users
+    const user = await findUser(userId);
+    
+    console.log("🔍 Login attempt:", { userId, password, person });
+    console.log("👤 User found:", user ? `${user.name} (${user.role})` : "NOT FOUND");
     
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials - User not found" });
@@ -33,7 +66,13 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const isMatch = await user.comparePassword(password);
+    console.log("🔐 Comparing passwords...");
+    console.log("   Provided:", password);
+    console.log("   Stored:", user.password);
+    
+    const isMatch = await comparePassword(user, password);
+    
+    console.log("✓ Password match:", isMatch);
     
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials - Password incorrect" });
@@ -49,6 +88,8 @@ router.post("/login", async (req, res) => {
       { expiresIn: "24h" }
     );
 
+    console.log("✅ Login successful for:", userId);
+    
     res.json({
       token,
       user: {
@@ -62,6 +103,7 @@ router.post("/login", async (req, res) => {
       }
     });
   } catch (error) {
+    console.error("❌ Login error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -69,6 +111,10 @@ router.post("/login", async (req, res) => {
 // Register (for initial setup - can be removed in production)
 router.post("/register", async (req, res) => {
   try {
+    if (!isDBConnected()) {
+      return res.status(503).json({ message: "Database not connected. Registration not available. Use existing test users for now." });
+    }
+
     const { userId, password, role, name, department, hostel, room, contactNumber } = req.body;
 
     const existingUser = await User.findOne({ userId });
@@ -104,7 +150,7 @@ router.get("/me", async (req, res) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findOne({ userId: decoded.userId }).select("-password");
+    const user = await findUser(decoded.userId);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -134,11 +180,16 @@ router.put("/change-password", authenticate, async (req, res) => {
     }
 
     const decoded = jwt.verify(req.headers.authorization.split(" ")[1], JWT_SECRET);
-    const user = await User.findOne({ userId: decoded.userId });
+    const user = await findUser(decoded.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const isMatch = await user.comparePassword(oldPassword);
+    const isMatch = await comparePassword(user, oldPassword);
     if (!isMatch) return res.status(401).json({ message: "Old password incorrect" });
+
+    // Only allow password change for DB users
+    if (!isDBConnected()) {
+      return res.status(503).json({ message: "Database not connected. Password change not available." });
+    }
 
     user.password = newPassword;
     await user.save();

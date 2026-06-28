@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import StarRating from "./StarRating";
 
 function ViewComplaints() {
   const [complaints, setComplaints] = useState([]);
-  const studentId = localStorage.getItem("studentId"); // roll number
  const [ratings, setRatings] = useState({});
+  const navigate = useNavigate();
+
+const getStudentId = () => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  return user.userId || localStorage.getItem("studentId");
+};
 
 const submitRating = async (complaintId) => {
   const rating = ratings[complaintId];
@@ -45,7 +51,7 @@ const submitRating = async (complaintId) => {
   fetchComplaints(); // refresh from backend
 };
     const fetchComplaints = () => {
-    const studentId = localStorage.getItem("studentId");
+    const studentId = getStudentId();
     const token = localStorage.getItem("token");
 
     fetch(`http://localhost:5000/api/complaints/student/${studentId}`, {
@@ -67,7 +73,7 @@ const submitRating = async (complaintId) => {
       });
   };
   useEffect(() => {
-    const studentId = localStorage.getItem("studentId");
+    const studentId = getStudentId();
     const token = localStorage.getItem("token");
 
     if (!studentId || !token) {
@@ -95,11 +101,16 @@ const submitRating = async (complaintId) => {
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>My Complaints</h2>
+    <div className="student-subpage">
+      <div className="student-subpage-header">
+        <h2>My Complaints</h2>
+        <button className="student-back-btn" onClick={() => navigate("/student/dashboard")}>
+          Back to Dashboard
+        </button>
+      </div>
 
       {complaints.length === 0 ? (
-        <p>No complaints submitted yet.</p>
+        <div className="empty-state">No complaints submitted yet.</div>
       ) : (
         complaints.map(c => (
           <div

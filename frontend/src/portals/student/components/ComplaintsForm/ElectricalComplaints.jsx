@@ -22,7 +22,8 @@ export default function ElectricalComplaints() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const studentId = localStorage.getItem("studentId");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const studentId = user.userId || localStorage.getItem("studentId") || formData.rollNumber;
     const complaintPayload = {
       studentName: formData.studentName,
       studentId: studentId,

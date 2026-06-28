@@ -5,7 +5,7 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   return (
-    <div className="home">
+    <div className="home">  
       <div className="overlay">
         
         {/* TITLE */}
@@ -22,8 +22,8 @@ export default function HomePage() {
         {/* FOOTER LINKS */}
         <div className="home-links">
           <a href="https://vnit.ac.in" target="_blank">VNIT Website</a>
-          <a href="https://vnit.ac.in/section/hostel/" target="_blank">Hostel Website</a>
-          <a href="https://vnit.ac.in/section/hostel/hostel-section-staff/" target="_blank">Contact Hostel Staff</a>
+          <a href="https://vnit.ac.in/section/hostel/" target="_blank">Hostel Section</a>
+          <a href="https://vnit.ac.in/section/hostel/hostel-section-staff/" target="_blank">Contact Hostel Section Staff</a>
         </div>
       </div>
     </div>

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function StudentProfile() {
   const [profile, setProfile] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -18,16 +20,26 @@ export default function StudentProfile() {
 
   if (profile === null) {
     return (
-      <div style={{ padding: 20 }}>
-        <h2>Profile</h2>
+      <div className="student-subpage">
+        <div className="student-subpage-header">
+          <h2>Profile</h2>
+          <button className="student-back-btn" onClick={() => navigate("/student/dashboard")}>
+            Back to Dashboard
+          </button>
+        </div>
         <p>Loading...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>My Profile</h2>
+    <div className="student-subpage">
+      <div className="student-subpage-header">
+        <h2>My Profile</h2>
+        <button className="student-back-btn" onClick={() => navigate("/student/dashboard")}>
+          Back to Dashboard
+        </button>
+      </div>
       <div style={{ maxWidth: 700, background: '#fff', padding: 20, borderRadius: 12, boxShadow: '0 8px 20px rgba(0,0,0,0.08)' }}>
         <p><strong>Name:</strong> {profile.name || '-'}</p>
         <p><strong>User ID:</strong> {profile.userId || '-'}</p>
